@@ -6,7 +6,6 @@ import { Loader2 } from 'lucide-react';
 
 export default function Home() {
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     // This check should only run on the client side.
@@ -16,10 +15,6 @@ export default function Home() {
     } else {
       router.replace('/login');
     }
-    // A small delay to avoid flashing content if redirection is very fast.
-    const timer = setTimeout(() => setLoading(false), 300); 
-
-    return () => clearTimeout(timer);
   }, [router]);
 
   return (

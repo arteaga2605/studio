@@ -31,7 +31,7 @@ export function LoginForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      email: "",
+      email: "daniel@ejemplo.com",
       password: "",
     },
   });
@@ -40,17 +40,25 @@ export function LoginForm() {
     setIsLoading(true);
     // Simulate API call
     setTimeout(() => {
-      // In a real app, you'd verify credentials. Here, we just log in.
-      console.log("Login attempt with:", values.email);
-      localStorage.setItem("isLoggedIn", "true");
-      localStorage.setItem("userEmail", values.email);
+      if (values.email === "daniel@ejemplo.com" && values.password === "22021655") {
+        console.log("Login attempt with:", values.email);
+        localStorage.setItem("isLoggedIn", "true");
+        localStorage.setItem("userEmail", values.email);
 
-      toast({
-        title: "Inicio de sesión exitoso",
-        description: "Bienvenido de nuevo.",
-      });
-      router.push("/dashboard");
-      router.refresh(); // Ensure the layout re-renders with the new auth state
+        toast({
+          title: "Inicio de sesión exitoso",
+          description: "Bienvenido de nuevo.",
+        });
+        router.push("/dashboard");
+        router.refresh(); // Ensure the layout re-renders with the new auth state
+      } else {
+        toast({
+            title: "Credenciales inválidas",
+            description: "El correo o la contraseña no son correctos.",
+            variant: "destructive",
+          });
+        setIsLoading(false);
+      }
     }, 1000);
   }
 
