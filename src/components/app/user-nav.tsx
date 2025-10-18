@@ -17,11 +17,11 @@ import { LogOut, User } from "lucide-react";
 
 export function UserNav() {
   const router = useRouter();
-  const [userEmail, setUserEmail] = useState("");
+  const [userEmail, setUserEmail] = useState<string | null>(null);
 
   useEffect(() => {
-    // This effect runs only on the client
-    const email = localStorage.getItem("userEmail") || "usuario@ejemplo.com";
+    // This effect runs only on the client, after hydration
+    const email = localStorage.getItem("userEmail");
     setUserEmail(email);
   }, []);
 
@@ -36,13 +36,18 @@ export function UserNav() {
     return email.charAt(0).toUpperCase();
   };
 
+  if (userEmail === null) {
+    // Render a placeholder or nothing while waiting for client-side mount
+    return null;
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-9 w-9">
             <AvatarImage src="/avatars/01.png" alt="User avatar" />
-            <AvatarFallback>{getInitials(userEmail)}</AvatarFallback>
+            <AvatarFallback>{getInitials(userEmail || '')}</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
