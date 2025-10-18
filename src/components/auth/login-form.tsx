@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -23,6 +24,12 @@ const formSchema = z.object({
   password: z.string().min(1, "La contraseña es requerida."),
 });
 
+const users = {
+    "admin@ejemplo.com": { password: "admin", role: "admin" },
+    "user@ejemplo.com": { password: "user", role: "user" },
+    "daniel@ejemplo.com": { password: "22021655", role: "admin" },
+}
+
 export function LoginForm() {
   const router = useRouter();
   const { toast } = useToast();
@@ -31,26 +38,32 @@ export function LoginForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      email: "daniel@ejemplo.com",
+      email: "",
       password: "",
     },
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
-    // Simulate API call
     setTimeout(() => {
-      if (values.email === "daniel@ejemplo.com" && values.password === "22021655") {
-        console.log("Login attempt with:", values.email);
+      const user = users[values.email as keyof typeof users];
+
+      if (user && user.password === values.password) {
         localStorage.setItem("isLoggedIn", "true");
         localStorage.setItem("userEmail", values.email);
+        localStorage.setItem("userRole", user.role);
 
         toast({
           title: "Inicio de sesión exitoso",
           description: "Bienvenido de nuevo.",
         });
-        router.push("/dashboard");
-        router.refresh(); // Ensure the layout re-renders with the new auth state
+        
+        if (user.role === 'admin') {
+            router.push("/dashboard");
+        } else {
+            router.push("/application");
+        }
+        router.refresh();
       } else {
         toast({
             title: "Credenciales inválidas",

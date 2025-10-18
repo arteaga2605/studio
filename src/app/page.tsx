@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 
@@ -8,10 +9,15 @@ export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
-    // This check should only run on the client side.
     const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+    const userRole = localStorage.getItem('userRole');
+
     if (isLoggedIn) {
-      router.replace('/dashboard');
+      if (userRole === 'admin') {
+        router.replace('/dashboard');
+      } else {
+        router.replace('/application');
+      }
     } else {
       router.replace('/login');
     }
