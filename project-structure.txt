@@ -332,7 +332,10 @@ export default function ApplicationSuccessPage() {
 ## File: /src/app/(app)/dashboard/page.tsx
 
 ```tsx
+"use client";
+
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -351,7 +354,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, FileText, CheckCircle } from "lucide-react";
+import { ArrowRight, FileText, CheckCircle, Loader2 } from "lucide-react";
 
 const requirements = [
   "Pasaporte válido",
@@ -366,18 +369,35 @@ const submittedApplications = [
     { name: "Carlos Rodriguez", date: "2024-07-15", status: "En Revisión" },
     { name: "Ana Martinez", date: "2024-07-12", status: "Aprobada" },
     { name: "Luis Hernandez", date: "2024-07-10", status: "Rechazada" },
-]
+];
 
 export default function DashboardPage() {
+  const [userRole, setUserRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    const role = localStorage.getItem("userRole");
+    setUserRole(role);
+  }, []);
+
+  if (userRole === null) {
+    return (
+      <div className="flex h-full w-full items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto space-y-8">
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
             <h1 className="text-3xl font-bold font-headline tracking-tight">
-                Dashboard de Solicitudes
+                Dashboard
             </h1>
             <p className="text-muted-foreground">
-                Bienvenido al portal de solicitud de visa para China.
+                {userRole === 'admin' 
+                    ? "Bienvenido al portal de administrador." 
+                    : "Bienvenido al portal de solicitud de visa para China."}
             </p>
         </div>
         <Button asChild>
@@ -389,67 +409,71 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5 text-primary" />
-              <span>Requisitos Clave</span>
-            </CardTitle>
-            <CardDescription>
-              Documentos básicos para la visa Tipo M.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-3">
-              {requirements.map((req, index) => (
-                <li key={index} className="flex items-start gap-3">
-                  <CheckCircle className="h-5 w-5 text-green-500 mt-0.5 shrink-0" />
-                  <span className="text-sm">{req}</span>
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-          <CardFooter>
-            <p className="text-xs text-muted-foreground">
-              Asegúrese de tener todo antes de iniciar.
-            </p>
-          </CardFooter>
-        </Card>
-        
-        <Card className="lg:col-span-2">
-            <CardHeader>
-                <CardTitle>Revisión de Solicitudes</CardTitle>
-                <CardDescription>
-                    Vista de administrador para gestionar las solicitudes enviadas.
-                </CardDescription>
-            </CardHeader>
-            <CardContent>
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Solicitante</TableHead>
-                            <TableHead>Fecha de Envío</TableHead>
-                            <TableHead className="text-right">Estado</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {submittedApplications.map(app => (
-                            <TableRow key={app.name}>
-                                <TableCell className="font-medium">{app.name}</TableCell>
-                                <TableCell>{app.date}</TableCell>
-                                <TableCell className="text-right">
-                                    <Badge variant={
-                                        app.status === 'Aprobada' ? 'default' : app.status === 'Rechazada' ? 'destructive' : 'secondary'
-                                    } className={`${app.status === 'Aprobada' && 'bg-green-600'}`}>
-                                        {app.status}
-                                    </Badge>
-                                </TableCell>
+        {userRole === 'user' && (
+             <Card className="lg:col-span-3">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                    <FileText className="h-5 w-5 text-primary" />
+                    <span>Requisitos Clave</span>
+                    </CardTitle>
+                    <CardDescription>
+                    Documentos básicos para la visa Tipo M.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <ul className="space-y-3">
+                    {requirements.map((req, index) => (
+                        <li key={index} className="flex items-start gap-3">
+                        <CheckCircle className="h-5 w-5 text-green-500 mt-0.5 shrink-0" />
+                        <span className="text-sm">{req}</span>
+                        </li>
+                    ))}
+                    </ul>
+                </CardContent>
+                <CardFooter>
+                    <p className="text-xs text-muted-foreground">
+                    Asegúrese de tener todo antes de iniciar.
+                    </p>
+                </CardFooter>
+            </Card>
+        )}
+       
+        {userRole === 'admin' && (
+             <Card className="lg:col-span-3">
+                <CardHeader>
+                    <CardTitle>Revisión de Solicitudes</CardTitle>
+                    <CardDescription>
+                        Vista de administrador para gestionar las solicitudes enviadas.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Solicitante</TableHead>
+                                <TableHead>Fecha de Envío</TableHead>
+                                <TableHead className="text-right">Estado</TableHead>
                             </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </CardContent>
-        </Card>
+                        </TableHeader>
+                        <TableBody>
+                            {submittedApplications.map(app => (
+                                <TableRow key={app.name}>
+                                    <TableCell className="font-medium">{app.name}</TableCell>
+                                    <TableCell>{app.date}</TableCell>
+                                    <TableCell className="text-right">
+                                        <Badge variant={
+                                            app.status === 'Aprobada' ? 'default' : app.status === 'Rechazada' ? 'destructive' : 'secondary'
+                                        } className={`${app.status === 'Aprobada' && 'bg-green-600'}`}>
+                                            {app.status}
+                                        </Badge>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </CardContent>
+            </Card>
+        )}
       </div>
     </div>
   );
@@ -682,7 +706,7 @@ export default function RootLayout({
 ```tsx
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 
@@ -690,10 +714,15 @@ export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
-    // This check should only run on the client side.
     const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+    const userRole = localStorage.getItem('userRole');
+
     if (isLoggedIn) {
-      router.replace('/dashboard');
+      if (userRole === 'admin') {
+        router.replace('/dashboard');
+      } else {
+        router.replace('/application');
+      }
     } else {
       router.replace('/login');
     }
@@ -720,6 +749,7 @@ export default function Home() {
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import {
   Sidebar,
   SidebarHeader,
@@ -731,12 +761,16 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
-import { Button } from "@/components/ui/button";
 import { FilePlus2, LayoutDashboard, Settings } from "lucide-react";
 
 export function AppSidebar() {
   const pathname = usePathname();
   const logo = PlaceHolderImages.find((img) => img.id === "logo");
+  const [userRole, setUserRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    setUserRole(localStorage.getItem("userRole"));
+  }, []);
 
   return (
     <Sidebar>
@@ -758,18 +792,20 @@ export function AppSidebar() {
       </SidebarHeader>
       <SidebarContent className="flex-grow p-2">
         <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              asChild
-              isActive={pathname === "/dashboard"}
-              tooltip="Dashboard"
-            >
-              <Link href="/dashboard">
-                <LayoutDashboard />
-                <span>Dashboard</span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
+          {userRole === 'admin' && (
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                asChild
+                isActive={pathname === "/dashboard"}
+                tooltip="Dashboard"
+              >
+                <Link href="/dashboard">
+                  <LayoutDashboard />
+                  <span>Dashboard</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          )}
           <SidebarMenuItem>
             <SidebarMenuButton
               asChild
@@ -834,6 +870,7 @@ export function UserNav() {
   const handleLogout = () => {
     localStorage.removeItem("isLoggedIn");
     localStorage.removeItem("userEmail");
+    localStorage.removeItem("userRole");
     router.push("/login");
     router.refresh();
   };
@@ -914,6 +951,12 @@ const formSchema = z.object({
   password: z.string().min(1, "La contraseña es requerida."),
 });
 
+const users = {
+    "admin@ejemplo.com": { password: "admin", role: "admin" },
+    "user@ejemplo.com": { password: "user", role: "user" },
+    "daniel@ejemplo.com": { password: "22021655", role: "admin" },
+}
+
 export function LoginForm() {
   const router = useRouter();
   const { toast } = useToast();
@@ -922,26 +965,32 @@ export function LoginForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      email: "daniel@ejemplo.com",
+      email: "",
       password: "",
     },
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
-    // Simulate API call
     setTimeout(() => {
-      if (values.email === "daniel@ejemplo.com" && values.password === "22021655") {
-        console.log("Login attempt with:", values.email);
+      const user = users[values.email as keyof typeof users];
+
+      if (user && user.password === values.password) {
         localStorage.setItem("isLoggedIn", "true");
         localStorage.setItem("userEmail", values.email);
+        localStorage.setItem("userRole", user.role);
 
         toast({
           title: "Inicio de sesión exitoso",
           description: "Bienvenido de nuevo.",
         });
-        router.push("/dashboard");
-        router.refresh(); // Ensure the layout re-renders with the new auth state
+        
+        if (user.role === 'admin') {
+            router.push("/dashboard");
+        } else {
+            router.push("/application");
+        }
+        router.refresh();
       } else {
         toast({
             title: "Credenciales inválidas",
