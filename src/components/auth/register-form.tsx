@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
@@ -21,11 +20,10 @@ import { users } from "@/lib/users";
 
 const formSchema = z.object({
   email: z.string().email("Por favor ingrese un correo válido."),
-  password: z.string().min(1, "La contraseña es requerida."),
+  password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres."),
 });
 
-export function LoginForm() {
-  const router = useRouter();
+export function RegisterForm() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -40,32 +38,26 @@ export function LoginForm() {
   function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     setTimeout(() => {
-      const user = users[values.email as keyof typeof users];
-
-      if (user && user.password === values.password) {
-        localStorage.setItem("isLoggedIn", "true");
-        localStorage.setItem("userEmail", values.email);
-        localStorage.setItem("userRole", user.role);
-
+      if (users[values.email as keyof typeof users]) {
         toast({
-          title: "Inicio de sesión exitoso",
-          description: "Bienvenido de nuevo.",
+          title: "Error de registro",
+          description: "Este correo electrónico ya está en uso.",
+          variant: "destructive",
         });
-        
-        if (user.role === 'admin') {
-            router.push("/dashboard");
-        } else {
-            router.push("/application");
-        }
-        router.refresh();
-      } else {
-        toast({
-            title: "Credenciales inválidas",
-            description: "El correo o la contraseña no son correctos.",
-            variant: "destructive",
-          });
         setIsLoading(false);
+        return;
       }
+
+      // In a real app, you'd send this to your backend.
+      // Here, we just add it to our in-memory user object.
+      users[values.email as keyof typeof users] = { password: values.password, role: "user" };
+
+      toast({
+        title: "¡Registro exitoso!",
+        description: "Ahora puede iniciar sesión con sus nuevas credenciales.",
+      });
+      setIsLoading(false);
+      // Maybe switch to login tab here, but for now we just show a toast.
     }, 1000);
   }
 
@@ -102,7 +94,7 @@ export function LoginForm() {
           {isLoading ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           ) : (
-            "Ingresar"
+            "Crear Cuenta"
           )}
         </Button>
       </form>
